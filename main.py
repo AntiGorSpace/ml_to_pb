@@ -1,5 +1,7 @@
 
 from classes.MLParser import MLParser
 
-mlp=MLParser()
-mlp.page_parser('https://mangalib.me/fullmetal_alchemist?section=chapters')
+# mlp=MLParser('akame-ga-kill')
+mlp=MLParser('naruto')
+mlp.download_all_from_page()
+mlp.download_images()
