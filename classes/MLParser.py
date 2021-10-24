@@ -1,47 +1,55 @@
 from selenium import webdriver
 from bs4 import BeautifulSoup
-import json
 import re
 import requests
 import os
 from progress.bar import IncrementalBar
+import time
 
-def stethem_write(name,data):
-    with open(name+'.json', 'w') as outfile:
-        json.dump(data, outfile)
-def stethem_reader(name):
-    with open(name+'.json', "r") as infile:
-        return json.load(infile)
-
-
-def check_and_cre_folder(dirname):
-        if not os.path.isdir(dirname):
-            os.mkdir(dirname)
-
+import funcs.castFuncs as cf
 
 class MLParser:
-
     chromedriver_path='chromedriver.exe'
-    image_folder='img'
-    page_links=set()
-    image_links={}
-    def __init__(self, manga_name):
-        self.manga_name = manga_name
+    image_folder=os.path.join('files','img')
+    json_folder = os.path.join('files','json')
+    
 
+    def __init__(self, manga_name):
+        self.page_links=set()
+        self.image_links={}
+        self.manga_name = manga_name
+        cf.check_and_cre_folder('files')
+        cf.check_and_cre_folder(self.image_folder)
+        cf.check_and_cre_folder(self.json_folder)
+        self.chrome_options = webdriver.ChromeOptions()
+        self.chrome_options.add_argument('headless')
+
+    def autorisation(self):
+        self.get_page('https://mangalib.me/')
+        pass
 
     def get_page(self,url):
-        options = webdriver.ChromeOptions()
-        options.add_argument('headless')
-        self.page = webdriver.Chrome(executable_path=self.chromedriver_path, chrome_options=options)
-        self.page.get(url)
+        self.page = webdriver.Chrome(executable_path=self.chromedriver_path, chrome_options=self.chrome_options)
+        try:
+            self.page.get(url)
+        except:
+            time.sleep(60)
+            self.get_page(url)
     
     def download_all_from_page(self):
         url=f'https://mangalib.me/{self.manga_name}?section=chapters'
         self.get_page(url)
-        for i in range(0,100):
-            self.page.execute_script(f"window.scrollTo(0, {i*200})")
+        i=1
+        while True:
+            start_len=len(self.page_links)
+            self.page.execute_script(f"window.scrollTo(0, document.documentElement.clientHeight*{i})")
             self.pageges_list_builder()
+            if start_len==len(self.page_links):
+                break
+            i+=1
+
         self.images_list_builder()
+        self.download_images()
     
     def pageges_list_builder(self) -> None:
         page_body = BeautifulSoup(self.page.page_source, 'lxml')
@@ -57,7 +65,7 @@ class MLParser:
             self.get_image_url(str(url))
             bar.next()
         bar.finish()
-        stethem_write("image_links-{self.manga_name}",self.image_links)
+        cf.stethem_write(os.path.join(self.json_folder,self.manga_name),self.image_links)
 
 
     def get_image_url(self,url):
@@ -73,24 +81,29 @@ class MLParser:
 
 
     def download_images(self):
-        # pages=self.image_links
-        pages=stethem_reader("image_links-{self.manga_name}")
-        check_and_cre_folder(self.image_folder)
-        books_folder=os.path.join(self.image_folder,self.manga_name)
-        check_and_cre_folder(books_folder)
-        {self.manga_name}
+        if len(self.image_links)>0:
+            pages=self.image_links
+        else:
+            pages=cf.stethem_reader(os.path.join(self.json_folder,self.manga_name))
+        self.books_folder=os.path.join(self.image_folder,self.manga_name)
+        cf.check_and_cre_folder(self.books_folder)
+
         image_cnt=0
         for page in pages:
             image_cnt+=len(pages[page])
         bar = IncrementalBar('download_images', max = image_cnt)
         for page in pages:
-            img_folder=os.path.join(books_folder,page[1:].replace('/','-'))
-            check_and_cre_folder(img_folder)
+            img_folder=os.path.join(self.books_folder,re.findall(r'[\d.]+$',page)[0])
+            cf.check_and_cre_folder(img_folder)
             
-    
+            image_index=1
             while len(pages[page])>0:
                 try:
-                    img_name=re.search(r'[.\w]+.\w+$',pages[page][0]).group(0)
+                    img_name=str(image_index)+re.search(r'.\w+$',pages[page][0]).group(0)
+                    if re.search(r'.gif$',pages[page][0]):
+                        bar.next()
+                        del pages[page][0]
+                        continue
                     img_path=os.path.join(img_folder,img_name)
                     if not os.path.exists(img_path) or os.path.getsize(img_path)<50000:
                         resp=self.file_download(pages[page][0])
@@ -98,6 +111,7 @@ class MLParser:
                             continue
                         self.save_image(img_path,resp.content)
                     del pages[page][0]
+                    image_index+=1
                     bar.next()
                 except:
                     print('err',pages[page][0])

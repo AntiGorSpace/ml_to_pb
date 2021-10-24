@@ -1,7 +1,9 @@
 
 from classes.MLParser import MLParser
+from classes.PdfBuilder import PdfBuilder
 
-# mlp=MLParser('akame-ga-kill')
-mlp=MLParser('naruto')
-mlp.download_all_from_page()
-mlp.download_images()
+for i in ['naruto']:
+    # mlp = MLParser(i)
+    # mlp.download_all_from_page()
+
+    pb = PdfBuilder(i)
