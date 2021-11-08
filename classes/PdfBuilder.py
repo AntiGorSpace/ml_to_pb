@@ -17,7 +17,7 @@ class PdfBuilder:
         self.pdf_folder = os.path.join('files','pdf')
         cf.check_and_cre_folder(self.pdf_folder)
         self.res_folder = os.path.join('files','pdf',self.manga_name)
-        cf.check_and_cre_folder(self.book_folder)
+        cf.check_and_cre_folder(self.res_folder)
         self.book_list_builder()
 
     def book_list_builder(self):
@@ -56,8 +56,13 @@ class PdfBuilder:
         for i in range(0, len(self.pdfs_images_lists)):
             pdfimages=[]
             for image in self.pdfs_images_lists[i]:
-                pdfimages.append(PILImage.open(image).convert('RGB'))
-            file_name=str(i+1)+'.pdf'
+                try:
+                    pdfimages.append(PILImage.open(image).convert('RGB'))
+                except:
+                    print('error',image)
+                    break
+            
+            file_name='0'*(4-len(str(i+1)))+str(i+1)+'.pdf'
             file_path=os.path.join(self.res_folder,file_name)
             pdfimages[0].save(file_path,save_all=True, append_images=pdfimages[1:])
             bar.next()
