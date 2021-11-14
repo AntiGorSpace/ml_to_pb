@@ -21,20 +21,15 @@ class PdfBuilder:
         self.book_list_builder()
 
     def book_list_builder(self):
-        def book_sort_key(e):
-            return float(e)
         self.books_list=os.listdir(self.book_folder)
-        self.books_list.sort(key=book_sort_key)
+        self.books_list.sort(key=lambda e:float(e))
         self.images_lists_builder()
     
     def images_lists_builder(self):
-        def image_sort_key(e):
-            return float(re.search(r'\d+',e).group(0))
-
         for book in self.books_list:
             image_folder = os.path.join(self.book_folder,book)
             self.images_lists[book] = os.listdir(image_folder)
-            self.images_lists[book].sort(key = image_sort_key)
+            self.images_lists[book].sort(key = lambda e:float(re.search(r'\d+',e).group(0)))
         self.pdfs_images_lists_builder()
     
     def pdfs_images_lists_builder(self):
@@ -47,8 +42,7 @@ class PdfBuilder:
                 self.pdfs_images_lists.append([])
                 last_index+=1
             for img in self.images_lists[book]:
-                if  True:
-                    self.pdfs_images_lists[last_index].append(os.path.join(image_folder, img))
+                if  True: self.pdfs_images_lists[last_index].append(os.path.join(image_folder, img))
         self.create_pdfs()
 
     def create_pdfs(self):

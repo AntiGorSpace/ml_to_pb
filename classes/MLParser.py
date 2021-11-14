@@ -44,8 +44,7 @@ class MLParser:
             start_len=len(self.page_links)
             self.page.execute_script(f"window.scrollTo(0, document.documentElement.clientHeight*{i})")
             self.pageges_list_builder()
-            if start_len==len(self.page_links):
-                break
+            if start_len==len(self.page_links): break
             i+=1
 
         self.images_list_builder()
@@ -54,7 +53,7 @@ class MLParser:
     def pageges_list_builder(self) -> None:
         page_body = BeautifulSoup(self.page.page_source, 'lxml')
         link_divs=page_body.find("div", class_="media-chapters-list").find_all("div", class_="media-chapter__name")
-        for link_div in link_divs:
+        for link_div in link_divs: 
             self.page_links.add(link_div.find("a", class_="link-default", href=True)['href'])
 
     def images_list_builder(self):
@@ -72,7 +71,7 @@ class MLParser:
         self.image_links[url]=[]
         soup = BeautifulSoup(self.page.page_source, 'lxml')
         pages_cnt=int(re.findall(r'[0-9]+',str(soup.find("label", class_="reader-pages__label")))[1])
-        for i in range(1,pages_cnt):
+        for i in range(1,pages_cnt): 
             self.page.execute_script(f'document.querySelector(".reader-paginate__item_right").click()')
         soup = BeautifulSoup(self.page.page_source, 'lxml')
         imgs=soup.find("div", class_="reader-view__container").find_all("img")
@@ -81,16 +80,15 @@ class MLParser:
 
 
     def download_images(self):
-        if len(self.image_links)>0:
+        if len(self.image_links)>0: 
             pages=self.image_links
-        else:
+        else: 
             pages=cf.stethem_reader(os.path.join(self.json_folder,self.manga_name))
         self.books_folder=os.path.join(self.image_folder,self.manga_name)
         cf.check_and_cre_folder(self.books_folder)
 
         image_cnt=0
-        for page in pages:
-            image_cnt+=len(pages[page])
+        for page in pages: image_cnt+=len(pages[page])
         bar = IncrementalBar('download_images', max = image_cnt)
         for page in pages:
             img_folder=os.path.join(self.books_folder,re.findall(r'[\d.]+$',page)[0])
@@ -107,8 +105,7 @@ class MLParser:
                     img_path=os.path.join(img_folder,img_name)
                     if not os.path.exists(img_path) or os.path.getsize(img_path)<50000:
                         resp=self.file_download(pages[page][0])
-                        if resp.status_code!=200:
-                            continue
+                        if resp.status_code!=200: continue
                         self.save_image(img_path,resp.content)
                     del pages[page][0]
                     image_index+=1
