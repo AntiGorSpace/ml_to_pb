@@ -23,9 +23,15 @@ class MLParser:
         cf.check_and_cre_folder(self.json_folder)
         self.chrome_options = webdriver.ChromeOptions()
         self.chrome_options.add_argument('headless')
+        # self.autorisation()
 
     def autorisation(self):
         self.get_page('https://mangalib.me/')
+        email=self.page.find_element_by_name('email')
+        email.send_keys('')
+        password=self.page.find_element_by_name('password')
+        password.send_keys('')
+
         pass
 
     def get_page(self,url):
@@ -70,6 +76,7 @@ class MLParser:
     def get_image_url(self,url):
         self.image_links[url]=[]
         soup = BeautifulSoup(self.page.page_source, 'lxml')
+        print(soup)
         pages_cnt=int(re.findall(r'[0-9]+',str(soup.find("label", class_="reader-pages__label")))[1])
         for i in range(1,pages_cnt): 
             self.page.execute_script(f'document.querySelector(".reader-paginate__item_right").click()')

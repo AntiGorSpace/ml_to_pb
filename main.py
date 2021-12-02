@@ -10,10 +10,9 @@ from classes.PdfBuilder import PdfBuilder
 # mlp.save_image(os.path.join('files','img','naruto','695','2.png'),resp.content)
 
 
-for i in ['cowboy-bebop-shooting-star']:
+for i in ['the-fable']:
     mlp = MLParser(i)
     mlp.download_all_from_page()
 
-    pb = PdfBuilder(i)
-
+    # pb = PdfBuilder(i)
 
