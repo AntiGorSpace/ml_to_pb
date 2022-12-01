@@ -76,7 +76,6 @@ class MLParser:
     def get_image_url(self,url):
         self.image_links[url]=[]
         soup = BeautifulSoup(self.page.page_source, 'lxml')
-        print(soup)
         pages_cnt=int(re.findall(r'[0-9]+',str(soup.find("label", class_="reader-pages__label")))[1])
         for i in range(1,pages_cnt): 
             self.page.execute_script(f'document.querySelector(".reader-paginate__item_right").click()')
